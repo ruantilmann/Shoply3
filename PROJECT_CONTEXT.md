@@ -121,6 +121,10 @@
 - Link adicionado no Header para navegação rápida (`apps/web/src/components/header.tsx:7-32`).
 - Ocultação do Header na rota de login/registro via wrapper client com `usePathname` (`apps/web/src/components/app-header.tsx:1-11`, `apps/web/src/app/layout.tsx:22-41`).
 - README atualizado para refletir estado atual do projeto (estrutura, ambiente, banco, desenvolvimento, fluxo de autenticação, UI e segurança) (`README.md:1-102`).
+- Correções de cursor: `DropdownMenuItem` e `SubTrigger` passam a exibir `cursor-pointer`; botão “Verificar agora” também (`apps/web/src/components/ui/dropdown-menu.tsx:62-82`, `apps/web/src/components/ui/dropdown-menu.tsx:201-223`, `apps/web/src/app/page.tsx:48-52`).
+- Link do email no menu do usuário abre a tela de cadastro (`apps/web/src/components/user-menu.tsx:37-58`).
+- Tela de alteração de cadastro criada em `/account`, com formulário para nome e imagem, usando `authClient.updateUser` (`apps/web/src/app/account/page.tsx:1-35`, `apps/web/src/components/account-form.tsx:1-96`).
+- Ajustes de tipagem: validação `image` sem `optional` para compatibilidade com TanStack Form e correção dos botões sociais para `signIn.social({ provider })` (`apps/web/src/components/account-form.tsx:19-24`, `apps/web/src/components/social-sign-in.tsx:7-13`).
 
 # Troubleshooting
 

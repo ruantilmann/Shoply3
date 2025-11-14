@@ -84,7 +84,7 @@ export default function Home() {
                         </div>
                         <button
                             onClick={checkStatus}
-                            className="text-sm underline underline-offset-2 hover:opacity-80"
+                            className="text-sm underline underline-offset-2 hover:opacity-80 cursor-pointer"
                         >
                             Verificar agora
                         </button>

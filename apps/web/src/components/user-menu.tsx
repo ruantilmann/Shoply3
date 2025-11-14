@@ -34,9 +34,13 @@ export default function UserMenu() {
 				<Button variant="outline">{session.user.name}</Button>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent className="bg-card">
-				<DropdownMenuLabel>My Account</DropdownMenuLabel>
-				<DropdownMenuSeparator />
-				<DropdownMenuItem>{session.user.email}</DropdownMenuItem>
+                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                    <Link href="/account" className="cursor-pointer">
+                        {session.user.email}
+                    </Link>
+                </DropdownMenuItem>
 				<DropdownMenuItem asChild>
 					<Button
 						variant="destructive"
