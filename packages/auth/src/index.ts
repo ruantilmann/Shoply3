@@ -1,6 +1,6 @@
 import { betterAuth, type BetterAuthOptions } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
-import prisma from "../../db/src/index.ts";
+import prisma from "@shoply3/db";
 
 export const auth = betterAuth<BetterAuthOptions>({
     database: prismaAdapter(prisma, {

@@ -2,8 +2,8 @@ import "dotenv/config";
 import Fastify from "fastify";
 import fastifyCors from "@fastify/cors";
 
-import { auth } from "../../../packages/auth/src/index.ts";
-import prisma from "../../../packages/db/src/index.ts";
+import { auth } from "@shoply3/auth";
+import prisma from "@shoply3/db";
 import z from "zod";
 
 const baseCorsConfig = {
@@ -37,7 +37,9 @@ fastify.route({
 			});
 			const response = await auth.handler(req);
 			reply.status(response.status);
-			response.headers.forEach((value, key) => reply.header(key, value));
+			response.headers.forEach((value: string, key: string) => {
+				reply.header(key, value);
+			});
 			reply.send(response.body ? await response.text() : null);
 		} catch (error) {
 			fastify.log.error({ err: error }, "Authentication Error:");
@@ -51,11 +53,14 @@ fastify.route({
 
 fastify.get("/api/lists", async (request, reply) => {
 	try {
-		const session = await auth.api.getSession(request, reply);//getSession(request, reply);
+		const session = await auth.api.getSession({
+			headers: request.headers as any,  // Fastify trabalha com IncomingHttpHeaders
+			query: request.query as any       // se precisar
+		});
 		if (!session?.user?.id) {
 			return reply.status(401).send({ error: "Unauthorized" });
 		}
-			const lists = await prisma.list.findMany({
+		const lists = await prisma.list.findMany({
 			where: { userId: session.user.id },
 			orderBy: { updatedAt: "desc" },
 		});
@@ -67,17 +72,20 @@ fastify.get("/api/lists", async (request, reply) => {
 
 fastify.post("/api/lists", async (request, reply) => {
 	try {
-		const session = await auth.api.getSession(request, reply);
+		const session = await auth.api.getSession({
+			headers: request.headers as any,  // Fastify trabalha com IncomingHttpHeaders
+			query: request.query as any       // se precisar
+		});
 		if (!session?.user?.id) {
 			return reply.status(401).send({ error: "Unauthorized", detail: "no-user" });
 		}
 		const schema = z.object({ name: z.string().min(1).max(100) });
-			const parsed = schema.safeParse(request.body ?? {});
-			if (!parsed.success) {
-				return reply.status(400).send({ error: "Invalid payload" });
-			}
-			const now = new Date();
-			const list = await prisma.list.create({
+		const parsed = schema.safeParse(request.body ?? {});
+		if (!parsed.success) {
+			return reply.status(400).send({ error: "Invalid payload" });
+		}
+		const now = new Date();
+		const list = await prisma.list.create({
 			data: {
 				id: crypto.randomUUID(),
 				name: parsed.data.name,

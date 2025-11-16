@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "files": [],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@shoply3/auth": ["packages/auth/src"],
+      "@shoply3/db": ["packages/db/src"],
+      "@shoply3/config/*": ["packages/config/*"]
+    }
+  }
+}

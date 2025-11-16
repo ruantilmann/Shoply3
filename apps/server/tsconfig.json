@@ -1,15 +1,14 @@
 {
-	"extends": "../../packages/config/tsconfig.base.json",
+	"extends": ["../../tsconfig.json", "../../packages/config/tsconfig.base.json"],
+	
 	"compilerOptions": {
 		"composite": true,
 		"outDir": "dist",
-		"baseUrl": ".",
-		"paths": {
-			"@/*": ["./src/*"],
-			"@shoply3/auth": ["../../packages/auth/src/index.ts"],
-			"@shoply3/db": ["../../packages/db/src/index.ts"],
-			"@shoply3/config/*": ["../../packages/config/*"]
-		},
-		"lib": ["ESNext", "DOM"]
-	}
+		"rootDir": ".",
+	},
+	 "references": [
+    { "path": "../../packages/auth" },
+    { "path": "../../packages/db" }
+  ],
+  "include": ["src"]
 }
