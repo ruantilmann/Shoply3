@@ -3,10 +3,20 @@
 import SignUpForm from "@/components/sign-up-form";
 import { SocialSignIn } from "@/components/social-sign-in";
 import SignInForm from "@/components/sign-in-form";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { authClient } from "@/lib/auth-client";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
     const [mode, setMode] = useState<"sign-in" | "sign-up">("sign-in");
+    const router = useRouter();
+    const { data: session } = authClient.useSession();
+
+    useEffect(() => {
+        if (session?.user) {
+            router.replace("/");
+        }
+    }, [session?.user]);
 
     return (
         <div className="min-h-screen flex items-center justify-center">

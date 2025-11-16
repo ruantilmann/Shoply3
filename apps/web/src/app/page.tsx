@@ -1,103 +1,125 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
-const TITLE_TEXT = `
- ██████╗ ███████╗████████╗████████╗███████╗██████╗
- ██╔══██╗██╔════╝╚══██╔══╝╚══██╔══╝██╔════╝██╔══██╗
- ██████╔╝█████╗     ██║      ██║   █████╗  ██████╔╝
- ██╔══██╗██╔══╝     ██║      ██║   ██╔══╝  ██╔══██╗
- ██████╔╝███████╗   ██║      ██║   ███████╗██║  ██║
- ╚═════╝ ╚══════╝   ╚═╝      ╚═╝   ╚══════╝╚═╝  ╚═╝
-
- ████████╗    ███████╗████████╗ █████╗  ██████╗██╗  ██╗
- ╚══██╔══╝    ██╔════╝╚══██╔══╝██╔══██╗██╔════╝██║ ██╔╝
-    ██║       ███████╗   ██║   ███████║██║     █████╔╝
-    ██║       ╚════██║   ██║   ██╔══██║██║     ██╔═██╗
-    ██║       ███████║   ██║   ██║  ██║╚██████╗██║  ██╗
-    ╚═╝       ╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝
-`;
+import { useRouter } from "next/navigation";
+import { authClient } from "@/lib/auth-client";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Plus } from "lucide-react";
 
 export default function Home() {
-    const [status, setStatus] = useState<"unknown" | "online" | "offline">("unknown");
-    const [latency, setLatency] = useState<number | null>(null);
-    const [message, setMessage] = useState<string | null>(null);
-    const [lastChecked, setLastChecked] = useState<number | null>(null);
-    const baseURL = process.env.NEXT_PUBLIC_SERVER_URL ?? "http://localhost:3000";
+    const baseURL = (process.env.NEXT_PUBLIC_SERVER_URL ?? "http://localhost:3000").replace(/\/+$/, "");
+    const { data: session } = authClient.useSession();
+    const [lists, setLists] = useState<Array<{ id: string; name: string }>>([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [name, setName] = useState("");
 
-    const checkStatus = async () => {
-        const start = performance.now();
+    const fetchLists = async () => {
         try {
-            const res = await fetch(`${baseURL}/`, { cache: "no-store" });
-            const end = performance.now();
-            setLatency(Math.round(end - start));
-            setLastChecked(Date.now());
-            if (res.ok) {
-                setStatus("online");
-                setMessage(null);
-            } else {
-                setStatus("offline");
-                setMessage(`${res.status} ${res.statusText}`);
+            setLoading(true);
+            setError(null);
+            const res = await fetch(`${baseURL}/api/lists`, {
+                credentials: "include",
+            });
+            if (!res.ok) {
+                const detail = await res.text().catch(() => "");
+                throw new Error(`Falha ao carregar listas (${res.status}) ${detail}`);
             }
+            const data = await res.json().catch(() => []);
+            setLists(data ?? []);
         } catch (e) {
-            const end = performance.now();
-            setLatency(Math.round(end - start));
-            setStatus("offline");
-            setLastChecked(Date.now());
-            const detail = e instanceof Error ? e.message : "erro desconhecido";
-            setMessage(`Falha ao conectar: ${detail}`);
+            setError(e instanceof Error ? e.message : "Erro desconhecido");
+        } finally {
+            setLoading(false);
         }
     };
 
+    const router = useRouter();
+
     useEffect(() => {
-        checkStatus();
-        const id = setInterval(checkStatus, 10_000);
-        return () => clearInterval(id);
-    }, []);
+        if (!session?.user) {
+            router.replace("/login");
+            return;
+        }
+        fetchLists();
+    }, [session?.user?.id]);
+
+    const createList = async () => {
+        try {
+            const res = await fetch(`${baseURL}/api/lists`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({ name }),
+            });
+            if (!res.ok) {
+                const detail = await res.text().catch(() => "");
+                throw new Error(`Falha ao criar lista (${res.status}) ${detail}`);
+            }
+            setIsModalOpen(false);
+            setName("");
+            await fetchLists();
+        } catch (e) {
+            setError(e instanceof Error ? e.message : "Erro desconhecido");
+        }
+    };
 
     return (
-        <div className="container mx-auto max-w-3xl px-4 py-2">
-            <pre className="overflow-x-auto font-mono text-sm">{TITLE_TEXT}</pre>
-            <div className="grid gap-6">
-                <section className="rounded-lg border p-4">
-                    <h2 className="mb-2 font-medium">API Status</h2>
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                            <span
-                                className={
-                                    status === "online"
-                                        ? "inline-flex h-3 w-3 rounded-full bg-green-500"
-                                        : status === "offline"
-                                        ? "inline-flex h-3 w-3 rounded-full bg-red-500"
-                                        : "inline-flex h-3 w-3 rounded-full bg-yellow-500"
-                                }
-                                aria-hidden
-                            />
-                            <span className="text-sm">
-                                {status === "online" && "Online"}
-                                {status === "offline" && "Offline"}
-                                {status === "unknown" && "Checando..."}
-                            </span>
-                            <span className="text-xs text-muted-foreground">
-                                {latency !== null ? `${latency}ms` : ""}
-                            </span>
-                        </div>
-                        <button
-                            onClick={checkStatus}
-                            className="text-sm underline underline-offset-2 hover:opacity-80 cursor-pointer"
-                        >
-                            Verificar agora
-                        </button>
-                    </div>
-                    <div className="mt-2 text-xs text-muted-foreground">
-                        <span>Servidor: {baseURL}</span>
-                        {message ? <span className="ml-2">{message}</span> : null}
-                        {lastChecked ? (
-                            <span className="ml-2">Última verificação: {new Date(lastChecked).toLocaleTimeString()}</span>
-                        ) : null}
-                    </div>
-                </section>
+        <div className="container mx-auto max-w-3xl px-4 py-6">
+            <div className="mb-4">
+                <h1 className="text-2xl font-bold">Minhas listas</h1>
+                <p className="text-sm text-muted-foreground">Usuário: {session?.user?.email ?? "não autenticado"}</p>
             </div>
+            <div className="grid gap-4">
+                {loading && <p>Carregando...</p>}
+                {error && <p className="text-red-500">{error}</p>}
+                {!loading && lists.length === 0 && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Nenhuma lista encontrada</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-sm text-muted-foreground">Crie sua primeira lista pelo botão "+"</p>
+                        </CardContent>
+                    </Card>
+                )}
+                {lists.map((l) => (
+                    <Card key={l.id}>
+                        <CardHeader>
+                            <CardTitle>{l.name}</CardTitle>
+                        </CardHeader>
+                    </Card>
+                ))}
+            </div>
+
+            <button
+                className="fixed bottom-6 right-6 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg hover:opacity-90"
+                aria-label="Criar lista"
+                onClick={() => setIsModalOpen(true)}
+            >
+                <Plus className="h-6 w-6" />
+            </button>
+
+            {isModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center">
+                    <div className="absolute inset-0 bg-black/50" onClick={() => setIsModalOpen(false)} />
+                    <div className="relative z-10 w-full max-w-sm rounded-xl border bg-card p-6 shadow-xl">
+                        <h2 className="mb-4 text-lg font-medium">Nova lista</h2>
+                        <div className="space-y-2">
+                            <Label htmlFor="list-name">Nome</Label>
+                            <Input id="list-name" value={name} onChange={(e) => setName(e.target.value)} />
+                        </div>
+                        <div className="mt-6 flex justify-end gap-2">
+                            <Button variant="outline" onClick={() => setIsModalOpen(false)}>Cancelar</Button>
+                            <Button onClick={createList} disabled={!name.trim()}>Criar</Button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

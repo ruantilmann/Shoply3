@@ -26,6 +26,12 @@
     "paths": {
       "@/*": [
         "./src/*"
+      ],
+      "@shoply3/auth": [
+        "../../packages/auth/src/index.ts"
+      ],
+      "@shoply3/db": [
+        "../../packages/db/src/index.ts"
       ]
     }
   },

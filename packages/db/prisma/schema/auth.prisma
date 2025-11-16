@@ -8,6 +8,7 @@ model User {
   updatedAt     DateTime
   sessions      Session[]
   accounts      Account[]
+  lists         List[]
 
   @@unique([email])
   @@map("user")
@@ -56,4 +57,15 @@ model Verification {
   updatedAt  DateTime?
 
   @@map("verification")
+}
+
+model List {
+  id        String   @id @map("_id")
+  name      String
+  createdAt DateTime
+  updatedAt DateTime
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("list")
 }

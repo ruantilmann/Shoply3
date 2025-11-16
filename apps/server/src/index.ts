@@ -2,10 +2,12 @@ import "dotenv/config";
 import Fastify from "fastify";
 import fastifyCors from "@fastify/cors";
 
-import { auth } from "@my-better-t-app/auth";
+import { auth } from "../../../packages/auth/src/index.ts";
+import prisma from "../../../packages/db/src/index.ts";
+import z from "zod";
 
 const baseCorsConfig = {
-	origin: process.env.CORS_ORIGIN || "",
+	origin: process.env.CORS_ORIGIN || "http://localhost:3001",
 	methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
 	allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
 	credentials: true,
@@ -45,6 +47,49 @@ fastify.route({
 			});
 		}
 	},
+});
+
+fastify.get("/api/lists", async (request, reply) => {
+	try {
+		const session = await auth.getSession(request, reply);
+		if (!session?.user?.id) {
+			return reply.status(401).send({ error: "Unauthorized" });
+		}
+			const lists = await prisma.list.findMany({
+			where: { userId: session.user.id },
+			orderBy: { updatedAt: "desc" },
+		});
+		reply.send(lists);
+	} catch (err) {
+		reply.status(500).send({ error: "Failed to load lists" });
+	}
+});
+
+fastify.post("/api/lists", async (request, reply) => {
+	try {
+		const session = await getSession(request, reply);
+		if (!session?.user?.id) {
+			return reply.status(401).send({ error: "Unauthorized", detail: "no-user" });
+		}
+		const schema = z.object({ name: z.string().min(1).max(100) });
+			const parsed = schema.safeParse(request.body ?? {});
+			if (!parsed.success) {
+				return reply.status(400).send({ error: "Invalid payload" });
+			}
+			const now = new Date();
+			const list = await prisma.list.create({
+			data: {
+				id: crypto.randomUUID(),
+				name: parsed.data.name,
+				createdAt: now,
+				updatedAt: now,
+				userId: session.user.id,
+			},
+		});
+		reply.status(201).send(list);
+	} catch (err) {
+		reply.status(500).send({ error: "Failed to create list" });
+	}
 });
 
 fastify.get("/", async () => {

@@ -2,13 +2,14 @@
 
 - Nome: `Shoply3`
 - Stack: monorepo com Next.js 16 (React 19), Fastify 5, Prisma 6, PostgreSQL, Turborepo, Tailwind v4, shadcn/ui, Better-Auth
-- Objetivo: base full‑stack pronta para autenticação (email/senha e OAuth), UI moderna, servidor rápido e camada de dados tipada.
+- Objetivo: app de lista de compras com foco em usabilidade, sincronização entre dispositivos e colaboração.
 
 # Objetivos
 
-- Oferecer autenticação confiável e extensível (email/senha, GitHub, Google)
-- Separar responsabilidades entre web (UI), server (API/Auth proxy) e packages (auth, db, config)
-- Facilitar evolução (features) com tipagem consistente e build otimizado
+- Permitir criar e gerenciar múltiplas listas de compras
+- Adicionar itens com quantidade, unidade, preço previsto e categoria
+- Marcar itens como comprados e calcular totais (previsto vs. real)
+- Autenticação para sincronização e compartilhamento de listas
 
 # Estrutura da Aplicação
 
@@ -24,8 +25,11 @@
 - Servidor Fastify: `apps/server/src/index.ts`
   - CORS base (origem, métodos, headers)
   - Proxy de auth: `GET|POST /api/auth/*` chama `auth.handler`
+  - API de Listas: `GET /api/lists` (lista do usuário) e `POST /api/lists` (cria lista)
+    - Encaminha `cookie`, `origin`, `x-forwarded-*` para validar sessão
+    - Usa `randomUUID()` para `id`
   - Inicialização: `listen(3000)`
-  - Referências: `apps/server/src/index.ts:7-13`, `apps/server/src/index.ts:21-48`, `apps/server/src/index.ts:54-60`
+  - Referências: `apps/server/src/index.ts:50-140`
 - Better-Auth: `packages/auth/src/index.ts`
   - `betterAuth` com `prismaAdapter(prisma)`
   - Provedores: email/senha, GitHub, Google
@@ -47,7 +51,7 @@
 - Monorepo com Turborepo: pipelines de `dev`, `build`, tarefas de DB
 - Build com Tsdown para server e packages (ESM, dts para libs)
 - Next habilita `typedRoutes` e `reactCompiler`
-- Tipagem compartilhada com `@my-better-t-app/config/tsconfig.base.json`
+- Tipagem compartilhada com `@shoply3/config/tsconfig.base.json` ou via caminho relativo `packages/config/tsconfig.base.json`
 - ESM em todos os pacotes, strict TS, aliases `@/*`
 
 # Padrões de Código Adotados
@@ -59,19 +63,20 @@
 
 # Requisitos Funcionais
 
-- Autenticação:
-  - Email/senha com validação (`zod`) e redirecionamento para `/dashboard`
-  - OAuth GitHub/Google com sincronização de email
-  - Sessão exposta no client: `useSession`, `getSession`
-  - Logout com `authClient.signOut`
-- Proteção de páginas:
-  - `dashboard` redireciona para `/login` sem sessão
+- Listas:
+  - Criar, editar e excluir listas
+  - Adicionar itens com quantidade e unidade, editar preço previsto
+  - Marcar itens como comprados e calcular total da lista
+  - Categorizar itens e ordenar por corredor/mercado
+- Sincronização:
+  - Autenticação opcional (email/senha, GitHub/Google) para salvar e sincronizar listas
+  - Compartilhamento de listas com outros usuários (futuro)
 
 # Fluxo de Lógica e Dados
 
-- Frontend chama `authClient` apontando para `NEXT_PUBLIC_SERVER_URL`
-- Server transforma requisição Fastify em `Request` Web, delega ao `auth.handler`
-- Better-Auth usa Prisma (PostgreSQL) para persistir usuários, sessões, contas e verificações
+- Frontend gerencia listas e itens com estado local, persistência e sincronização via API
+- Server expõe autenticação com `auth.handler` e endpoints para dados de listas/itens
+- Prisma modela usuários, listas, itens e estados de compra
 
 # Gargalos, Riscos e Pontos Fracos
 
@@ -84,39 +89,40 @@
 
 # Oportunidades de Melhoria
 
-- Passar `onSwitchToSignUp` e `onSwitchToSignIn` entre telas de login/registro
-- Implementar componente de status que checa `GET http://localhost:3000/` e exibe latência/estado
-- Centralizar configuração de `NEXT_PUBLIC_SERVER_URL` e `CORS_ORIGIN` por ambiente (dev/prod)
-- Adicionar testes (unitários para forms, integração para fluxo de auth)
-- CI mínima (type‑check, lint, build) via GitHub Actions
-- Middleware/guard para páginas protegidas e SSR de sessão
-- Observabilidade: métricas básicas no server (p99, throughput) e tracing opcional
+- Offline‑first com sincronização e resolução de conflitos
+- Templates de listas e histórico de compras
+- Scanner de código de barras e sugestões de preços
+- Centralização de configurações por ambiente (dev/prod)
+- Métricas e tracing no server para desempenho das operações de listas
 
 # Plano de Evolução
 
 - Curto prazo:
-  - Corrigir props dos formulários de auth e UX de alternância login/registro
-  - Health‑check da API na Home e página de status
-  - Hardening de CORS e `trustedOrigins` com múltiplas origens (dev/prod)
+  - Modelos de `lista` e `item` no Prisma e rotas básicas de CRUD
+  - UI para criação/edição de listas e marcação de itens como comprados
+  - Persistência local com fallback quando offline
 - Médio prazo:
-  - Testes e2e do fluxo de autenticação (Playwright/Cypress)
-  - Roles/permissions simples no modelo e guardas no client/server
-  - Pipeline CI/CD com verificação de tipos e migrations automatizadas
+  - Compartilhamento de listas e permissões simples
+  - Histórico e templates reutilizáveis
+  - Testes e2e para operações críticas de listas/itens
 - Longo prazo:
-  - Observabilidade (logs estruturados, métricas, tracing)
-  - Segurança: rotação de segredos, revisão de exposição de headers
+  - Offline‑first completo e resolução de conflitos
+  - Observabilidade e segurança de dados
 
 # Alterações Recentes
 
-- Corrigida alternância entre Login/Registro na página de login, passando as props e controlando estado local (`apps/web/src/app/login/page.tsx:1-36`).
-- Ajustado `authClient` com fallback de `baseURL` para dev (`apps/web/src/lib/auth-client.ts:5-8`).
-- Corrigida configuração de Better-Auth para provedores sociais usando `socialProviders` e remoção de `syncUser` inválido (`packages/auth/src/index.ts:5-29`).
-- Adicionado indicador de status da API na Home com verificação de disponibilidade e latência (`apps/web/src/app/page.tsx:19-60`).
-- Implementado polling de status a cada 10s e exibição de detalhes de erro quando offline (`apps/web/src/app/page.tsx:33-44`, `apps/web/src/app/page.tsx:54-60`).
-- Ajustado UI base do `Button` para exibir cursor de clique (pointer) em todos os variantes (`apps/web/src/components/ui/button.tsx:7-36`).
+- Modelo `List` adicionado e relação `User.lists` (`packages/db/prisma/schema/auth.prisma:1-59`).
+- API de listas criada: `GET/POST /api/lists` com verificação de sessão e encaminhamento de `cookie`/`origin` (`apps/server/src/index.ts:70-138`).
+- Home exibe listas do usuário autenticado, com botão flutuante “+” e modal para criar lista (`apps/web/src/app/page.tsx:1-160`).
+- Proteção: Home redireciona não autenticado para `/login`; `/login` redireciona autenticado para `/` (`apps/web/src/app/page.tsx:26-34`, `apps/web/src/app/login/page.tsx:11-22`).
+- Renomeação de pacotes internos para `@shoply3/*` e mapeamentos de `tsconfig` via caminhos relativos.
+- Banco renomeado para `shoply3` em Docker e `.env` (`packages/db/docker-compose.yml:8`, `packages/db/.env:1`, `apps/server/.env:1`).
+- Correções: uso de `randomUUID` no server, `trustedOrigins` com fallback, normalização de `baseURL` e mensagens de erro mais detalhadas na Home.
 
 # Rotas e Proteções
 
+- Home `/` exige sessão; sem sessão, redireciona para `/login` (`apps/web/src/app/page.tsx:26-34`).
+- `/login` redireciona usuário autenticado para `/` (`apps/web/src/app/login/page.tsx:11-22`).
 - Rota protegida de boas‑vindas: `/welcome` exige usuário autenticado e exibe dados do usuário (`apps/web/src/app/welcome/page.tsx:1-41`).
 - Link adicionado no Header para navegação rápida (`apps/web/src/components/header.tsx:7-32`).
 - Ocultação do Header na rota de login/registro via wrapper client com `usePathname` (`apps/web/src/components/app-header.tsx:1-11`, `apps/web/src/app/layout.tsx:22-41`).

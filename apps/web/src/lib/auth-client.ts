@@ -1,4 +1,4 @@
-import type { auth } from "@my-better-t-app/auth";
+import type { auth } from "../../../../packages/auth/src/index.ts";
 import { createAuthClient } from "better-auth/react";
 import { inferAdditionalFields } from "better-auth/client/plugins";
 

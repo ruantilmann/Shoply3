@@ -1,6 +1,6 @@
 # Shoply3
 
-Monorepo moderno baseado em TypeScript com Next.js 16 (React 19), Fastify 5, Prisma 6, PostgreSQL, Better-Auth e Turborepo.
+App de lista de compras construído em monorepo TypeScript com Next.js 16 (React 19), Fastify 5, Prisma 6, PostgreSQL, Better-Auth e Turborepo.
 
 ## Principais Tecnologias
 
@@ -13,7 +13,7 @@ Monorepo moderno baseado em TypeScript com Next.js 16 (React 19), Fastify 5, Pri
 ## Estrutura do Projeto
 
 ```
-my-better-t-app/
+Shoply3/
 ├── apps/
 │   ├── web/           # Frontend (Next.js)
 │   └── server/        # Backend (Fastify) + proxy Better-Auth
@@ -78,19 +78,22 @@ npm run dev
 
 A Home exibe um indicador de status da API (com polling a cada 10s) para evitar inconsistências nos botões de autenticação.
 
-## Fluxo de Autenticação
+## Autenticação e Sincronização
 
+- Autenticação para salvar e sincronizar listas entre dispositivos.
 - O servidor (`apps/server`) expõe o Better-Auth via proxy em `GET|POST /api/auth/*`.
-- O cliente (`apps/web/src/lib/auth-client.ts`) consome usando `NEXT_PUBLIC_SERVER_URL`.
-- Email/senha e GitHub/Google estão habilitados.
-- Rotas protegidas:
-  - `/dashboard`
-  - `/welcome` (boas‑vindas com dados do usuário)
+- O cliente (`apps/web/src/lib/auth-client.ts`) usa `NEXT_PUBLIC_SERVER_URL`.
+- Proteções:
+  - Home `/` requer sessão; sem sessão, redireciona para `/login`.
+  - `/login` redireciona usuário autenticado para `/`.
 
-## Comportamento de UI
+## Funcionalidades de Lista de Compras
 
-- O Header é ocultado na rota `/login` para foco nas telas de autenticação.
-- Botões possuem `cursor-pointer` e feedback visual consistente.
+- Criar e excluir listas.
+- Adicionar itens com quantidade, unidade e preço previsto.
+- Marcar itens como comprados e visualizar totais (previsto vs. real).
+- Categorizar itens e ordenar por corredor/mercado.
+- UI: Home lista as listas do usuário; botão flutuante “+” abre modal para criar nova lista.
 
 ## Scripts Disponíveis (raiz)
 
@@ -99,7 +102,7 @@ A Home exibe um indicador de status da API (com polling a cada 10s) para evitar 
 - `npm run dev:web` — inicia apenas o web
 - `npm run dev:server` — inicia apenas o server
 - `npm run check-types` — verificação de tipos TypeScript
-- `npm run db:*` — comandos de banco via package `@my-better-t-app/db`
+- `npm run db:*` — comandos de banco via package `@shoply3/db`
 
 ## Segurança e Boas Práticas
 
@@ -112,4 +115,6 @@ A Home exibe um indicador de status da API (com polling a cada 10s) para evitar 
 
 - O projeto usa ESM e TypeScript estrito em todos os pacotes.
 - Next habilita `typedRoutes` e `reactCompiler`.
+- API de Listas: `GET /api/lists` lista listas do usuário autenticado; `POST /api/lists` cria lista (campo único: `name`).
+- Modelo de Dados: `User` relaciona com `List` (um‑para‑muitos) via Prisma.
 - O contexto do projeto está em `PROJECT_CONTEXT.md` e deve ser atualizado sempre que o projeto mudar.

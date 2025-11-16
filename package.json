@@ -13,14 +13,14 @@
     "dev:native": "turbo -F native dev",
     "dev:web": "turbo -F web dev",
     "dev:server": "turbo -F server dev",
-    "db:push": "turbo -F @my-better-t-app/db db:push",
-    "db:studio": "turbo -F @my-better-t-app/db db:studio",
-    "db:generate": "turbo -F @my-better-t-app/db db:generate",
-    "db:migrate": "turbo -F @my-better-t-app/db db:migrate",
-    "db:start": "turbo -F @my-better-t-app/db db:start",
-    "db:watch": "turbo -F @my-better-t-app/db db:watch",
-    "db:stop": "turbo -F @my-better-t-app/db db:stop",
-    "db:down": "turbo -F @my-better-t-app/db db:down"
+    "db:push": "turbo -F @shoply3/db db:push",
+    "db:studio": "turbo -F @shoply3/db db:studio",
+    "db:generate": "turbo -F @shoply3/db db:generate",
+    "db:migrate": "turbo -F @shoply3/db db:migrate",
+    "db:start": "turbo -F @shoply3/db db:start",
+    "db:watch": "turbo -F @shoply3/db db:watch",
+    "db:stop": "turbo -F @shoply3/db db:stop",
+    "db:down": "turbo -F @shoply3/db db:down"
   },
   "dependencies": {
     "dotenv": "^17.2.2",
