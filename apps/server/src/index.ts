@@ -51,7 +51,7 @@ fastify.route({
 
 fastify.get("/api/lists", async (request, reply) => {
 	try {
-		const session = await auth.getSession(request, reply);
+		const session = await auth.api.getSession(request, reply);//getSession(request, reply);
 		if (!session?.user?.id) {
 			return reply.status(401).send({ error: "Unauthorized" });
 		}
@@ -67,7 +67,7 @@ fastify.get("/api/lists", async (request, reply) => {
 
 fastify.post("/api/lists", async (request, reply) => {
 	try {
-		const session = await getSession(request, reply);
+		const session = await auth.api.getSession(request, reply);
 		if (!session?.user?.id) {
 			return reply.status(401).send({ error: "Unauthorized", detail: "no-user" });
 		}

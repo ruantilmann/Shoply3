@@ -25,11 +25,12 @@
 - Servidor Fastify: `apps/server/src/index.ts`
   - CORS base (origem, métodos, headers)
   - Proxy de auth: `GET|POST /api/auth/*` chama `auth.handler`
+  - Sessão: usa `auth.api.getSession(request, reply)` para obter a sessão nas rotas
   - API de Listas: `GET /api/lists` (lista do usuário) e `POST /api/lists` (cria lista)
     - Encaminha `cookie`, `origin`, `x-forwarded-*` para validar sessão
     - Usa `randomUUID()` para `id`
   - Inicialização: `listen(3000)`
-  - Referências: `apps/server/src/index.ts:50-140`
+  - Referências: `apps/server/src/index.ts:50-140` (sessão em `apps/server/src/index.ts:70`)
 - Better-Auth: `packages/auth/src/index.ts`
   - `betterAuth` com `prismaAdapter(prisma)`
   - Provedores: email/senha, GitHub, Google
@@ -113,10 +114,11 @@
 
 - Modelo `List` adicionado e relação `User.lists` (`packages/db/prisma/schema/auth.prisma:1-59`).
 - API de listas criada: `GET/POST /api/lists` com verificação de sessão e encaminhamento de `cookie`/`origin` (`apps/server/src/index.ts:70-138`).
+- Sessão do Better‑Auth centralizada nas rotas via `auth.api.getSession(request, reply)`; problema de 401 resolvido.
 - Home exibe listas do usuário autenticado, com botão flutuante “+” e modal para criar lista (`apps/web/src/app/page.tsx:1-160`).
 - Proteção: Home redireciona não autenticado para `/login`; `/login` redireciona autenticado para `/` (`apps/web/src/app/page.tsx:26-34`, `apps/web/src/app/login/page.tsx:11-22`).
 - Renomeação de pacotes internos para `@shoply3/*` e mapeamentos de `tsconfig` via caminhos relativos.
-- Banco renomeado para `shoply3` em Docker e `.env` (`packages/db/docker-compose.yml:8`, `packages/db/.env:1`, `apps/server/.env:1`).
+- Banco mantido como `my-better-t-app` nos `.env` e Docker.
 - Correções: uso de `randomUUID` no server, `trustedOrigins` com fallback, normalização de `baseURL` e mensagens de erro mais detalhadas na Home.
 
 # Rotas e Proteções
