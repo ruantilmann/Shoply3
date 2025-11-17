@@ -33,7 +33,7 @@
   - Referências: `apps/server/src/index.ts:50-140` (sessão em `apps/server/src/index.ts:70`)
 - Better-Auth: `packages/auth/src/index.ts`
   - `betterAuth` com `prismaAdapter(prisma)`
-  - Provedores: email/senha, GitHub, Google
+  - Provedores: email/senha, Google
   - `trustedOrigins` via `CORS_ORIGIN`
   - Referências: `packages/auth/src/index.ts:5-29`
 - Prisma/DB:
@@ -70,7 +70,7 @@
   - Marcar itens como comprados e calcular total da lista
   - Categorizar itens e ordenar por corredor/mercado
 - Sincronização:
-  - Autenticação opcional (email/senha, GitHub/Google) para salvar e sincronizar listas
+  - Autenticação opcional (email/senha, Google) para salvar e sincronizar listas
   - Compartilhamento de listas com outros usuários (futuro)
 
 # Fluxo de Lógica e Dados
@@ -145,6 +145,7 @@
     - Auditar elementos que usam `asChild` com `Button` para garantir que o cursor permaneça consistente
     - Criar um teste visual (Playwright) verificando cursor em variantes de `Button`
     - Definir guideline de UX para elementos interativos exigirem `cursor-pointer` quando apropriado
+    - Remoção do botão “Sign in with GitHub”; manter apenas “Sign in with Google”
 
 
 # Variáveis de Ambiente

@@ -3,6 +3,7 @@
   "files": [],
   "compilerOptions": {
     "baseUrl": ".",
+    "rootDir": ".",
     "paths": {
       "@shoply3/auth": ["packages/auth/src"],
       "@shoply3/db": ["packages/db/src"],

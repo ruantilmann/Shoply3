@@ -1,13 +1,13 @@
 # Shoply3
 
-App de lista de compras construído em monorepo TypeScript com Next.js 16 (React 19), Fastify 5, Prisma 6, PostgreSQL, Better-Auth e Turborepo.
+App de lista de compras construído em monorepo TypeScript com Next.js 16 (React 19), Fastify 5, Prisma 6, PostgreSQL, Better-Auth (email/senha + OAuth Google) e Turborepo.
 
 ## Principais Tecnologias
 
 - Next.js (App Router) com Tailwind CSS v4 e shadcn/ui
 - Fastify (Node.js) como servidor da API e proxy de autenticação
 - Prisma ORM com PostgreSQL
-- Better-Auth (email/senha + OAuth GitHub/Google)
+- Better-Auth (email/senha + OAuth Google)
 - Turborepo para orquestração de workspaces e tarefas
 
 ## Estrutura do Projeto
@@ -41,7 +41,6 @@ npm install
   - `BETTER_AUTH_SECRET`
   - `BETTER_AUTH_URL` (ex.: `http://localhost:3000`)
   - `CORS_ORIGIN` (ex.: `http://localhost:3001`)
-  - `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`
   - `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`
 
 - `apps/web/.env`:
@@ -83,6 +82,7 @@ A Home exibe um indicador de status da API (com polling a cada 10s) para evitar 
 - Autenticação para salvar e sincronizar listas entre dispositivos.
 - O servidor (`apps/server`) expõe o Better-Auth via proxy em `GET|POST /api/auth/*`.
 - O cliente (`apps/web/src/lib/auth-client.ts`) usa `NEXT_PUBLIC_SERVER_URL`.
+- Login social: apenas Google.
 - Proteções:
   - Home `/` requer sessão; sem sessão, redireciona para `/login`.
   - `/login` redireciona usuário autenticado para `/`.
