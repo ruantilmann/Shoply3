@@ -93,7 +93,7 @@ A Home exibe um indicador de status da API (com polling a cada 10s) para evitar 
 - Adicionar itens com quantidade, unidade e preço previsto.
 - Marcar itens como comprados e visualizar totais (previsto vs. real).
 - Categorizar itens e ordenar por corredor/mercado.
-- UI: Home lista as listas do usuário; botão flutuante “+” abre modal para criar nova lista.
+- UI: Home lista as listas do usuário; botão flutuante “+” abre modal para criar nova lista; ao clicar na lista, abre a página de itens.
 
 ## Scripts Disponíveis (raiz)
 
@@ -116,5 +116,6 @@ A Home exibe um indicador de status da API (com polling a cada 10s) para evitar 
 - O projeto usa ESM e TypeScript estrito em todos os pacotes.
 - Next habilita `typedRoutes` e `reactCompiler`.
 - API de Listas: `GET /api/lists` lista listas do usuário autenticado; `POST /api/lists` cria lista (campo único: `name`).
-- Modelo de Dados: `User` relaciona com `List` (um‑para‑muitos) via Prisma.
+- API de Itens: `GET /api/lists/:id/items` lista itens da lista; `POST /api/lists/:id/items` cria item (campos: `name`, `quantity`, `unit`, `pricePlanned`).
+- Modelo de Dados: `User` relaciona com `List` (um‑para‑muitos) e `List` relaciona com `Item`.
 - O contexto do projeto está em `PROJECT_CONTEXT.md` e deve ser atualizado sempre que o projeto mudar.

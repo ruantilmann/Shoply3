@@ -15,19 +15,33 @@ export async function registerListRoutes(fastify: FastifyInstance) {
   });
 
   fastify.post("/api/lists", { preHandler: authGuard }, async (request, reply) => {
-    const schema = z.object({ name: z.string().min(1).max(100) });
+    const schema = z.object({
+      name: z.string().trim().min(1, { message: "name is required" }).max(100, { message: "name must be ≤ 100 chars" }),
+    });
     const parsed = schema.safeParse(request.body ?? {});
     if (!parsed.success) {
-      return reply.status(400).send({ error: "Invalid payload" });
+      return reply.status(400).send({ error: "Invalid payload", issues: parsed.error.issues });
     }
+
+    const userId = (request as any).session.user.id;
+    const name = parsed.data.name;
+
+    const exists = await prisma.list.findFirst({
+      where: { userId, name },
+      select: { id: true },
+    });
+    if (exists) {
+      return reply.status(409).send({ error: "List already exists" });
+    }
+
     const now = new Date();
     const list = await prisma.list.create({
       data: {
         id: crypto.randomUUID(),
-        name: parsed.data.name,
+        name,
         createdAt: now,
         updatedAt: now,
-        userId: (request as any).session.user.id,
+        userId,
       },
     });
     reply.status(201).send(list);

@@ -26,9 +26,10 @@
   - CORS base (origem, métodos, headers)
   - Proxy de auth: `GET|POST /api/auth/*` chama `auth.handler`
   - Sessão: usa `auth.api.getSession(request, reply)` para obter a sessão nas rotas
-  - API de Listas: `GET /api/lists` (lista do usuário) e `POST /api/lists` (cria lista)
-    - Encaminha `cookie`, `origin`, `x-forwarded-*` para validar sessão
-    - Usa `randomUUID()` para `id`
+- API de Listas: `GET /api/lists` (lista do usuário) e `POST /api/lists` (cria lista)
+  - Encaminha `cookie`, `origin`, `x-forwarded-*` para validar sessão
+  - Usa `randomUUID()` para `id`
+  - API de Itens: `GET /api/lists/:id/items` e `POST /api/lists/:id/items` com validação e verificação de propriedade da lista
   - Inicialização: `listen(3000)`
   - Referências: `apps/server/src/index.ts:50-140` (sessão em `apps/server/src/index.ts:70`)
 - Better-Auth: `packages/auth/src/index.ts`
@@ -38,7 +39,7 @@
   - Referências: `packages/auth/src/index.ts:5-29`
 - Prisma/DB:
   - Datasource e generator: `packages/db/prisma/schema/schema.prisma:1-11`
-  - Modelos de auth: `packages/db/prisma/schema/auth.prisma:1-59`
+  - Modelos de auth e dados: `packages/db/prisma/schema/auth.prisma:1-88`
   - Export do client: `packages/db/src/index.ts:1-4`
 - Web/Next:
   - Cliente de auth: `apps/web/src/lib/auth-client.ts:5-8`
@@ -116,6 +117,7 @@
 - API de listas criada: `GET/POST /api/lists` com verificação de sessão e encaminhamento de `cookie`/`origin` (`apps/server/src/index.ts:70-138`).
 - Sessão do Better‑Auth centralizada nas rotas via `auth.api.getSession(request, reply)`; problema de 401 resolvido.
 - Home exibe listas do usuário autenticado, com botão flutuante “+” e modal para criar lista (`apps/web/src/app/page.tsx:1-160`).
+ - Itens de lista: listas clicáveis na Home abrem página de itens; endpoints `/api/lists/:id/items` implementados; criado modelo `Item` com relação à `List`.
 - Proteção: Home redireciona não autenticado para `/login`; `/login` redireciona autenticado para `/` (`apps/web/src/app/page.tsx:26-34`, `apps/web/src/app/login/page.tsx:11-22`).
 - Renomeação de pacotes internos para `@shoply3/*` e mapeamentos de `tsconfig` via caminhos relativos.
 - Banco mantido como `my-better-t-app` nos `.env` e Docker.

@@ -66,6 +66,23 @@ model List {
   updatedAt DateTime
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     Item[]
 
   @@map("list")
+}
+
+model Item {
+  id          String   @id @map("_id")
+  listId      String
+  list        List     @relation(fields: [listId], references: [id], onDelete: Cascade)
+  name        String
+  quantity    Float    @default(1)
+  unit        String?  @default("un")
+  pricePlanned Float?  @map("price_planned")
+  priceReal    Float?  @map("price_real")
+  purchased   Boolean  @default(false)
+  createdAt   DateTime
+  updatedAt   DateTime
+
+  @@map("item")
 }

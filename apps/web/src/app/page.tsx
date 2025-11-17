@@ -88,10 +88,13 @@ export default function Home() {
                     </Card>
                 )}
                 {lists.map((l) => (
-                    <Card key={l.id}>
+                    <Card key={l.id} className="cursor-pointer hover:bg-muted" onClick={() => router.push(`/lists/${l.id}`)}>
                         <CardHeader>
                             <CardTitle>{l.name}</CardTitle>
                         </CardHeader>
+                        <CardContent>
+                            <p className="text-sm text-muted-foreground">Clique para abrir</p>
+                        </CardContent>
                     </Card>
                 ))}
             </div>

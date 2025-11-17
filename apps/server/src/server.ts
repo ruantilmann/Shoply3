@@ -3,6 +3,7 @@ import Fastify from "fastify";
 import fastifyCors from "@fastify/cors";
 import { registerAuthRoutes } from "./routes/auth.routes";
 import { registerListRoutes } from "./routes/lists.routes";
+import { registerItemRoutes } from "./routes/items.routes";
 import { registerSession } from "./plugins/session";
 
 //import { auth } from "@shoply3/auth";
@@ -61,6 +62,7 @@ fastify.route({
 */
 
 registerListRoutes(fastify);
+registerItemRoutes(fastify);
 /* moved lists routes to routes/lists.routes.ts */
 /*
 fastify.get("/api/lists", async (request, reply) => {
