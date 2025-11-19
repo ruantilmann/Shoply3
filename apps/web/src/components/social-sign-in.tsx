@@ -5,7 +5,8 @@ import { Button } from "./ui/button";
 
 export const SocialSignIn = () => {
     const handleGoogleSignIn = () => {
-        authClient.signIn.social({ provider: "google" });
+        const target = (process.env.NEXT_PUBLIC_WEB_URL ?? "http://localhost:3001").replace(/\/+$/, "");
+        authClient.signIn.social({ provider: "google", callbackURL: `${target}/` });
     };
 
 	return (

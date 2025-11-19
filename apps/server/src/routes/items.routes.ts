@@ -56,4 +56,24 @@ export async function registerItemRoutes(fastify: FastifyInstance) {
     });
     reply.status(201).send(item);
   });
+
+  fastify.delete("/api/lists/:id/items/:itemId", { preHandler: authGuard }, async (request, reply) => {
+    const session = (request as any).session;
+    const params = request.params as any;
+    const listId = params.id as string;
+    const itemId = params.itemId as string;
+
+    const list = await prisma.list.findFirst({ where: { id: listId, userId: session.user.id }, select: { id: true } });
+    if (!list) {
+      return reply.status(404).send({ error: "List not found" });
+    }
+
+    const item = await prisma.item.findFirst({ where: { id: itemId, listId }, select: { id: true } });
+    if (!item) {
+      return reply.status(404).send({ error: "Item not found" });
+    }
+
+    await prisma.item.delete({ where: { id: itemId } });
+    reply.status(204).send();
+  });
 }

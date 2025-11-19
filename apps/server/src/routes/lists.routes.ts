@@ -46,4 +46,17 @@ export async function registerListRoutes(fastify: FastifyInstance) {
     });
     reply.status(201).send(list);
   });
+
+  fastify.delete("/api/lists/:id", { preHandler: authGuard }, async (request, reply) => {
+    const userId = (request as any).session.user.id;
+    const listId = (request.params as any).id as string;
+
+    const list = await prisma.list.findFirst({ where: { id: listId, userId }, select: { id: true } });
+    if (!list) {
+      return reply.status(404).send({ error: "List not found" });
+    }
+
+    await prisma.list.delete({ where: { id: listId } });
+    reply.status(204).send();
+  });
 }

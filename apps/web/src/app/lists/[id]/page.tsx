@@ -3,10 +3,11 @@
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardAction } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Trash } from "lucide-react";
 
 export default function ListItemsPage() {
   const baseURL = (process.env.NEXT_PUBLIC_SERVER_URL ?? "http://localhost:3000").replace(/\/+$/, "");
@@ -70,6 +71,22 @@ export default function ListItemsPage() {
     }
   };
 
+  const deleteItem = async (itemId: string) => {
+    try {
+      const res = await fetch(`${baseURL}/api/lists/${listId}/items/${itemId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (!res.ok) {
+        const detail = await res.text().catch(() => "");
+        throw new Error(`Falha ao excluir item (${res.status}) ${detail}`);
+      }
+      await fetchItems();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Erro desconhecido");
+    }
+  };
+
   return (
     <div className="container mx-auto max-w-3xl px-4 py-6">
       <div className="mb-4">
@@ -96,6 +113,17 @@ export default function ListItemsPage() {
                 <span>{it.name}</span>
                 <span className="text-sm text-muted-foreground">{it.quantity} {it.unit ?? "un"}</span>
               </CardTitle>
+              <CardAction>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Excluir item"
+                  className="rounded-full hover:ring-2 hover:ring-red-500 hover:ring-offset-2 hover:ring-offset-background"
+                  onClick={() => deleteItem(it.id)}
+                >
+                  <Trash className="size-4 text-red-600" />
+                </Button>
+              </CardAction>
             </CardHeader>
           </Card>
         ))}

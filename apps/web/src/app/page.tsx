@@ -3,11 +3,12 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardAction } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Plus } from "lucide-react";
+import { Trash } from "lucide-react";
 
 export default function Home() {
     const baseURL = (process.env.NEXT_PUBLIC_SERVER_URL ?? "http://localhost:3000").replace(/\/+$/, "");
@@ -68,6 +69,22 @@ export default function Home() {
         }
     };
 
+    const deleteList = async (listId: string) => {
+        try{
+            const res = await fetch(`${baseURL}/api/lists/${listId}`, {
+                method: "DELETE",
+                credentials: "include",
+            });
+            if (!res.ok) {
+                const detail = await res.text().catch(() => "");
+                throw new Error(`Falha ao excluir lista (${res.status}) ${detail}`);
+            }
+            await fetchLists();
+        } catch (e) {
+            setError(e instanceof Error ? e.message : "Erro desconhecido");
+        }
+    };
+
     return (
         <div className="container mx-auto max-w-3xl px-4 py-6">
             <div className="mb-4">
@@ -88,14 +105,23 @@ export default function Home() {
                     </Card>
                 )}
                 {lists.map((l) => (
-                    <Card key={l.id} className="cursor-pointer hover:bg-muted" onClick={() => router.push(`/lists/${l.id}`)}>
-                        <CardHeader>
-                            <CardTitle>{l.name}</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-sm text-muted-foreground">Clique para abrir</p>
-                        </CardContent>
-                    </Card>
+                    <div key={l.id} className="relative">
+                        <Card className="cursor-pointer hover:bg-muted" onClick={() => router.push(`/lists/${l.id}`)}>
+                            <CardHeader>
+                                <CardTitle>{l.name}</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="text-sm text-muted-foreground">Clique para abrir</p>
+                            </CardContent>
+                        </Card>
+                        <button
+                            aria-label="Excluir lista"
+                            className="absolute z-10 top-2 right-2 rounded-full p-1 hover:ring-2 hover:ring-red-500 hover:ring-offset-2 hover:ring-offset-background"
+                            onClick={(e) => { e.stopPropagation(); deleteList(l.id); }}
+                        >
+                            <Trash className="size-4 text-red-600" />
+                        </button>
+                    </div>
                 ))}
             </div>
 
